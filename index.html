@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pilgrimage Ticket Booking</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --accent:#60a5fa;
+      --muted:#94a3b8; --glass: rgba(255,255,255,0.03);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; background:
+      linear-gradient(180deg, rgba(96,165,250,0.06), rgba(15,23,36,0.06)),
+      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%230c1220"/></svg>') center/cover no-repeat;
+      color: #e6eef8; display:flex; align-items:center; justify-content:center; padding:28px;
+    }
+
+    .container{
+      width:100%; max-width:980px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:14px; padding:22px; box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+      display:grid; gap:20px; grid-template-columns: 1fr 420px;
+    }
+
+    header { grid-column: 1 / -1; display:flex; gap:16px; align-items:center }
+    .brand { display:flex; align-items:center; gap:12px }
+    .logo{
+      width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#7dd3fc);
+      display:flex; align-items:center; justify-content:center; font-weight:700; color:#04263b; font-size:20px;
+      box-shadow: 0 6px 18px rgba(8,14,26,0.5);
+    }
+    h1 { margin:0; font-size:20px; color:#e8f2ff }
+    p.lead { margin:0; color:var(--muted); font-size:13px }
+
+    form { background:var(--card); border-radius:12px; padding:18px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.02) }
+    .field { display:flex; flex-direction:column; gap:6px; margin-bottom:12px }
+    label { font-size:13px; color:#d7e6ff }
+    input[type="text"], input[type="tel"], input[type="email"], select, input[type="date"], textarea, input[type="number"]{
+      background:var(--glass); border:1px solid rgba(255,255,255,0.03); color:inherit; padding:10px 12px; border-radius:8px;
+      font-size:14px; outline:none;
+    }
+    input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 4px rgba(96,165,250,0.09); border-color:rgba(96,165,250,0.35) }
+
+    .row { display:flex; gap:12px }
+    .col { flex:1 }
+
+    button.btn {
+      display:inline-flex; gap:8px; align-items:center; justify-content:center;
+      background:linear-gradient(90deg,var(--accent),#7dd3fc); color:#04263b; padding:10px 14px; border-radius:10px; border:none;
+      font-weight:600; cursor:pointer; box-shadow: 0 8px 18px rgba(96,165,250,0.12);
+    }
+    button.ghost { background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted) }
+
+    .panel {
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));
+      border-radius:12px; padding:18px; min-height:200px;
+    }
+    .slot { display:flex; justify-content:space-between; padding:8px; border-radius:8px; margin-bottom:8px; background:rgba(255,255,255,0.01) }
+    .muted { color:var(--muted); font-size:13px }
+    .stat { font-size:22px; font-weight:700; color:#dff3ff }
+
+    .confirm {
+      display:none; flex-direction:column; gap:10px; padding:12px; border-radius:10px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))
+    }
+
+    .ticket {
+      background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:10px; padding:12px;
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+    }
+
+    footer { grid-column: 1 / -1; text-align:center; color:var(--muted); font-size:13px; margin-top:6px }
+
+    #paymentDetails {
+  margin-top: 10px;
+  display: none;
+}
+#paymentDetails label {
+  margin-top: 8px;
+  display: block;
+  font-size: 13px;
+  color: #000;
+}
+#paymentDetails input,
+#paymentDetails select {
+  margin-top: 4px;
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 6px;
+  width: 100%;
+}
+
+/* ✅ Fix dropdown text visibility */
+select, option {
+  background: #ffffff; /* white background */
+  color: #000000; /* black text */
+}
+/* ✅ Make all user input boxes white */
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  background: #ffffff; /* white background */
+  color: #000000; /* black text */
+  border: 1px solid #ccc;
+}
+  </style>
+</head>
+<body>
+  <main class="container" role="main">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true">PT</div>
+        <div>
+          <h1>Pilgrim Ticketing</h1>
+          <p class="lead">Fast, safe, and contactless booking for temple darshan — prototype for crowd management.</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Booking Form -->
+    <form id="bookingForm" aria-labelledby="bookingFormTitle" novalidate>
+      <h2 id="bookingFormTitle" style="font-size:16px;margin:6px 0 14px;color:#e9f6ff">Book Your Visit</h2>
+
+      <div class="field">
+        <label for="temple">Temple / Location</label>
+        <select id="temple" required>
+          <option value="Somnath">Somnath</option>
+          <option value="Dwarka">Dwarka</option>
+          <option value="Ambaji">Ambaji</option>
+          <option value="LocalTemple">Local Temple</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <div class="col field">
+          <label for="visitDate">Visit Date</label>
+          <input id="visitDate" type="date" required aria-required="true" />
+        </div>
+        <div class="col field">
+          <label for="timeSlot">Time Slot</label>
+          <select id="timeSlot" required></select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col field">
+          <label for="tickets">Number of Tickets (Age ≥ 5)</label>
+          <input id="tickets" type="number" value="1" min="0" max="15" required />
+          <div class="muted" style="font-size:12px"> • Children below 5 years – Free <br>
+  • Age 5 and above – ₹10 per person <br>
+  • Maximum 15 paid tickets per booking</div>
+        </div>
+        <div class="col field">
+          <label for="priority">Priority / Accessibility</label>
+          <select id="priority">
+            <option value="none">No special assistance</option>
+            <option value="elderly">Elderly / Senior</option>
+            <option value="wheelchair">Wheelchair assistance</option>
+            <option value="pregnant">Pregnant</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="name">Full name</label>
+        <input id="name" type="text" placeholder="e.g.,Ram Kumar" required />
+      </div>
+
+      <div class="row">
+        <div class="col field">
+          <label for="phone">Phone</label>
+          <input id="phone" type="tel" placeholder="+91 98765 43210" pattern="[0-9+\s-]{6,20}" required />
+        </div>
+        <div class="col field">
+          <label for="email">Email </label>
+          <input id="email" type="email" placeholder="abc@gmail.com" required />
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="field">
+        <label for="payment">Payment Method</label>
+        <select id="payment" required>
+          <option value="">--Select Payment--</option>
+          <option value="UPI">UPI</option>
+          <option value="Debit Card">Debit Card</option>
+          <option value="Net Banking">Net Banking</option>
+          <option value="Cash at Counter">Cash at Counter</option>
+        </select>
+      </div>
+      <div id="paymentDetails"></div>
+
+      <div style="display:flex; gap:10px; align-items:center; margin-top:6px">
+        <button type="submit" class="btn" id="submitBtn">Confirm Booking</button>
+        <button type="button" class="ghost" id="resetBtn">Reset Demo</button>
+      </div>
+
+      <div id="formMessage" role="status" aria-live="polite" style="margin-top:12px; color:#f6f6f6"></div>
+    </form>
+
+    <!-- Right panel -->
+    <aside class="panel">
+      <h2 style="margin:0 0 12px;color:#e9f6ff;font-size:16px">Today's Slots & Availability</h2>
+      <div id="slotsList"></div>
+      <div id="confirmation" class="confirm">
+        <div class="muted">Booking confirmed</div>
+        <div class="ticket" id="ticketSection">
+          <div>
+            <div style="font-weight:700;font-size:15px" id="ticketTemple"></div>
+            <div class="muted" id="ticketName"></div>
+            <div style="margin-top:6px"><span class="muted">Date:</span> <span id="ticketDate"></span> &nbsp; <span class="muted">Slot:</span> <span id="ticketSlot"></span></div>
+            <div style="margin-top:4px"><span class="muted">Tickets:</span> <span id="ticketCount"></span></div>
+            <div style="margin-top:4px"><span class="muted">Paid:</span> ₹<span id="ticketAmount"></span></div>
+            <div style="margin-top:4px"><span class="muted">Payment:</span> <span id="ticketPayment"></span></div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:12px;color:var(--muted)">Booking ID</div>
+            <div style="font-weight:700;font-size:16px" id="bookingId"></div>
+            <button onclick="window.print()" class="btn" style="margin-top:8px;font-size:12px;padding:6px 10px">🖨 Print / Download</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <footer>Prototype — demo only. Replace with secure backend & payment gateway for production.</footer>
+  </main>
+
+  <script>
+    const SLOT_TEMPLATE = [
+      { label: "06:00am - 07:00am", capacity: 143 },
+      { label: "07:00am - 09:00am", capacity: 111 },
+      { label: "09:00am - 11:00am", capacity: 125 },
+      { label: "11:00am - 13:00pm", capacity: 200 },
+      { label: "16:00pm - 18:00pm", capacity: 107 },
+      { label: "18:00pm - 20:00pm", capacity: 51 }
+    ];
+    const MAX_PER_BOOKING = 10;
+    const PRICE = 10; // ₹ per person age ≥ 5
+
+    const visitDate = document.getElementById('visitDate');
+    const timeSlot = document.getElementById('timeSlot');
+    const slotsList = document.getElementById('slotsList');
+    const bookingForm = document.getElementById('bookingForm');
+    const confirmation = document.getElementById('confirmation');
+    const formMessage = document.getElementById('formMessage');
+    const paymentSelect = document.getElementById('payment');
+    const paymentDetailsDiv = document.getElementById('paymentDetails');
+    const resetBtn = document.getElementById('resetBtn');
+
+    function todayISO(){ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
+    visitDate.min = todayISO(); visitDate.value = todayISO();
+
+    function populateSlots(date){ timeSlot.innerHTML=''; SLOT_TEMPLATE.forEach(s=>{ let opt=document.createElement('option'); opt.value=s.label; opt.textContent=`${s.label} — ${s.capacity}`; timeSlot.appendChild(opt); }); renderAvailability(date); }
+    function renderAvailability(date){ slotsList.innerHTML=''; SLOT_TEMPLATE.forEach(s=>{ const used=Number(localStorage.getItem(date+s.label)||0); const left=s.capacity-used; const el=document.createElement('div'); el.className='slot'; el.innerHTML=`<div>${s.label}</div><div class="stat">${left}</div>`; slotsList.appendChild(el); }); }
+
+    paymentSelect.addEventListener("change", function(){
+      const method=this.value; paymentDetailsDiv.style.display="block"; paymentDetailsDiv.innerHTML="";
+      if(method==="UPI"){ paymentDetailsDiv.innerHTML=`<label>UPI ID</label><input type="text" required>`; }
+      else if(method==="Debit Card"){ paymentDetailsDiv.innerHTML=`<label>Card Number</label><input type="text" maxlength="16" required><label>Expiry</label><input type="month" required>`; }
+      else if(method==="Net Banking"){ paymentDetailsDiv.innerHTML=`<label>Bank</label><select required><option>SBI</option><option>HDFC</option><option>ICICI</option></select>`; }
+      else { paymentDetailsDiv.style.display="none"; }
+    });
+
+    bookingForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const tickets = Number(document.getElementById('tickets').value||0);
+      const name=document.getElementById('name').value.trim();
+      const temple=document.getElementById('temple').value;
+      const date=visitDate.value;
+      const slot=timeSlot.value;
+      const payment=paymentSelect.value;
+
+      if(!tickets || !name || !date || !slot || !payment){ formMessage.textContent="Fill all fields."; return; }
+
+      const amount = tickets*PRICE;
+
+      const proceed=confirm(`Confirm booking of ${tickets} ticket(s).\nTotal = ₹${amount}\nPayment: ${payment}\n\nProceed?`);
+      if(!proceed){ formMessage.textContent="Booking cancelled."; return; }
+
+      const bookingId="BKG-"+Math.random().toString(36).substr(2,6).toUpperCase();
+
+      document.getElementById('ticketTemple').textContent=temple;
+      document.getElementById('ticketName').textContent=name;
+      document.getElementById('ticketDate').textContent=date;
+      document.getElementById('ticketSlot').textContent=slot;
+      document.getElementById('ticketCount').textContent=tickets;
+      document.getElementById('ticketAmount').textContent=amount;
+      document.getElementById('ticketPayment').textContent=payment;
+      document.getElementById('bookingId').textContent=bookingId;
+
+      confirmation.style.display="flex";
+      formMessage.textContent="✅ Booking confirmed!";
+    });
+
+    // Reset demo button
+    resetBtn.addEventListener('click', ()=>{
+      bookingForm.reset();
+      confirmation.style.display="none";
+      formMessage.textContent="Demo reset.";
+      populateSlots(todayISO());
+    });
+
+    populateSlots(visitDate.value);
+  </script>
+</body>
+</html>
